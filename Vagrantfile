@@ -12,7 +12,7 @@ Vagrant.configure("2") do |config|
 
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://vagrantcloud.com/search.
-  config.vm.box = "geerlingguy/debian9"
+  # config.vm.box = "geerlingguy/debian9"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -32,7 +32,7 @@ Vagrant.configure("2") do |config|
 
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
-  config.vm.network "private_network", type: "dhcp"
+  # config.vm.network "private_network", type: "dhcp"
 
   # Create a public network, which generally matched to bridged network.
   # Bridged networks make the machine appear as another physical device on
@@ -67,4 +67,88 @@ Vagrant.configure("2") do |config|
   #   apt-get update
   #   apt-get install -y apache2
   # SHELL
+  #
+  config.vm.define "controle" do |controle|
+    controle.vm.box = "geerlingguy/debian9"
+    controle.vm.network "private_network", ip: "172.17.177.100"
+    controle.vm.hostname = "controle"
+    controle.vm.provider "virtualbox" do |vb|
+      vb.name = "controle"
+      vb.memory = "2048"
+      vb.cpus = 2
+      # vb.gui = true
+    end
+    controle.vm.provision "shell", path: "update.sh"
+    controle.vm.synced_folder ".", "/vagrant", disabled: false
+    controle.vm.synced_folder "./configs", "/var/configs", owner: "root", group: "root"
+  end
+  
+  config.vm.define "web" do |web|
+    web.vm.box = "geerlingguy/debian9"
+    web.vm.network "private_network", ip: "172.17.177.101"
+    web.vm.hostname = "web"
+    web.vm.provider "virtualbox" do |vb|
+      vb.name = "web"
+      vb.memory = "512"
+      vb.cpus = 1
+    end
+    web.vm.provision "shell", path: "update.sh"
+    web.vm.synced_folder ".", "/vagrant", disabled: false
+    web.vm.synced_folder "./configs", "/var/configs", owner: "root", group: "root"
+  end
+
+  config.vm.define "db" do |db|
+    db.vm.box = "geerlingguy/debian9"
+    db.vm.network "private_network", ip: "172.17.177.102"
+    db.vm.hostname = "db"
+    db.vm.provider "virtualbox" do |vb|
+      vb.name = "db"
+      vb.memory = "512"
+      vb.cpus = 1
+    end
+    db.vm.provision "shell", path: "update.sh"
+    db.vm.synced_folder ".", "/vagrant", disabled: false
+    db.vm.synced_folder "./configs", "/var/configs", owner: "root", group: "root"
+  end
+
+  config.vm.define "master" do |master|
+    master.vm.box = "geerlingguy/centos7"
+    master.vm.network "private_network", ip: "172.17.177.110"
+    master.vm.hostname = "master"
+    master.vm.provider "virtualbox" do |vb|
+      vb.name = "master"
+      vb.memory = "2048"
+      vb.cpus = 2
+    end
+    master.vm.synced_folder "./configs", "/var/configs", owner: "root", group: "root"
+  end
+
+  (1..3).each do |i| 
+    config.vm.define "node#{i}" do |node|
+      node.vm.box = "geerlingguy/centos7"
+      node.vm.network "private_network", ip: "172.17.177.11#{i}"
+      node.vm.hostname = "node#{i}"
+      node.vm.provider "virtualbox" do |vb|
+        vb.name = "node#{i}"
+        vb.memory = "512"
+        vb.cpus = 1
+      end
+    end
+  end
+
+  config.group.groups = {
+    "controle" => [
+      "controle",
+    ],
+    "clientes" => [
+      "web",
+      "db",
+    ],
+    "nodes" => [
+      "nodes1",
+      "node2",
+      "node3",
+    ],
+  }
+  
 end
