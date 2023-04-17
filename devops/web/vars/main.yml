@@ -1,0 +1,7 @@
+---
+# vars file for web
+app_user: "www-data"
+http_port: 80
+http_conf: "express.conf"
+http_host: "asf.com"
+disable_default: true

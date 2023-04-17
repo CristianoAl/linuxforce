@@ -1,0 +1,5 @@
+---
+# defaults file for web
+  modsapache:
+    - vhost_alias
+    - php7.0

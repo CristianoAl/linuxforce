@@ -1,0 +1,68 @@
+---
+# tasks file for web
+  - name: 'Instalacao de pacotes da aplicacao express'
+    apt:
+      pkg:
+        - php7.0
+        - php-pear
+        - php7.0-curl
+        - php7.0-gd
+        - php7.0-intl
+        - php7.0-xmlrpc
+        - php7.0-mysql
+        - apache2
+        - python-mysqldb
+        - wget
+        - zip
+        - curl
+        - vim
+      state: present
+      update_cache: yes
+  - name: 'Diretorio de webserver'
+    file:
+      path: /srv/www
+      state: directory
+      owner: "{{ app_user }}"
+      mode: '0755'
+  - name: 'Download e extracao do conteudo da aplicacao'
+    unarchive:
+      src: https://github.com/rogerramossilva/devops/raw/master/express.zip
+      dest: /srv/www
+      remote_src: yes
+      validate_certs: no
+  - name: 'Substituindo IP de conexao com base de dados no arquivo backup.php'
+    replace:
+      path: /srv/www/express/backup.php
+      regexp: '192\.168\.1\.20'
+      # regexp: '172.17.177.101'
+      replace: '172.17.177.102'
+  - name: 'Criando arquivo de configuracao para virtual host da pagina express'
+    template:
+      src: "files/express.conf"
+      dest: "/etc/apache2/sites-available/{{ http_conf }}"
+  - name: 'Criando directory para controle das configuracoes express'
+    template:
+      src: "files/direxpress.conf"
+      dest: "/etc/apache2/conf-available/direxpress.conf"
+  - name: 'Alterano o arquivo /etc/hosts para resolucao de nomes'
+    template:
+      src: "files/hostsintranet"
+      dest: "/etc/hosts"
+  - name: 'Habilitando site'
+    shell: /usr/sbin/a2ensite {{ http_conf }}
+    notify: restart apache
+  - name: 'Habilitando configuracao do direxpress'
+    shell: /usr/sbin/a2enconf direxpress.conf
+    notify: restart apache
+  - name: 'Habilitar modulo virtual hosts'
+    apache2_module:
+      name: vhost_alias
+      state: present
+    notify: restart apache
+  - name: 'Permissao para o usuario www-data'
+    file:
+      path: /srv/www/express
+      state: directory
+      recurse: yes
+      owner: "{{ app_user }}"
+      group: "{{ app_user }}"
