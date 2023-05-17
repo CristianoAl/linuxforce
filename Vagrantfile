@@ -70,7 +70,7 @@ Vagrant.configure("2") do |config|
   #
   config.vm.define "controle" do |controle|
     controle.vm.box = "geerlingguy/debian9"
-    controle.vm.network "private_network", ip: "172.17.177.100"
+    controle.vm.network "public_network", ip: "192.168.2.230"
     controle.vm.hostname = "controle"
     controle.vm.provider "virtualbox" do |vb|
       vb.name = "controle"
@@ -113,7 +113,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "master" do |master|
     master.vm.box = "geerlingguy/centos7"
-    master.vm.network "private_network", ip: "172.17.177.110"
+    master.vm.network "public_network", ip: "192.168.2.220"
     master.vm.hostname = "master"
     master.vm.provider "virtualbox" do |vb|
       vb.name = "master"
@@ -126,7 +126,7 @@ Vagrant.configure("2") do |config|
   (1..2).each do |i| 
     config.vm.define "node#{i}" do |node|
       node.vm.box = "geerlingguy/centos7"
-      node.vm.network "private_network", ip: "172.17.177.11#{i}"
+      node.vm.network "public_network", ip: "192.168.100.22#{i}"
       node.vm.hostname = "node#{i}"
       node.vm.provider "virtualbox" do |vb|
         vb.name = "node#{i}"
